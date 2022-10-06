@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 28504805e4a860542948e63462247b7e
+guid: 6a6effb21d855a6488f508de7bd7a57e
 ModelImporter:
   serializedVersion: 22103
   internalIDToNameTable: []
@@ -8,37 +8,37 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: base
-    second: {fileID: 2100000, guid: 38ff51cc65cf15849bfdad55130ca567, type: 2}
+    second: {fileID: 2100000, guid: b34b8a8f374f70146bcc8c634e07b0f8, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: glass
-    second: {fileID: 2100000, guid: 6e715643711989641bdaad6db41247ab, type: 2}
+    second: {fileID: 2100000, guid: 61e513238e9feef46ad77c291a7c7642, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: internals_alu
-    second: {fileID: 2100000, guid: 30c981e2032ff34489c5e5f30ef9320a, type: 2}
+    second: {fileID: 2100000, guid: aa318d8c31ae5a84ba2581e88981dcb6, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: internals_b
-    second: {fileID: 2100000, guid: 6e64dca6b6e302949a268c3bc0a7f8ba, type: 2}
+    second: {fileID: 2100000, guid: a6064701c15739140ac207d182a67d74, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: mirror
-    second: {fileID: 2100000, guid: b4504354d6860054d852a1718270780e, type: 2}
+    second: {fileID: 2100000, guid: e8ec567cefe85c542be108e914665eee, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: prop
-    second: {fileID: 2100000, guid: ab8dca240de70ef4cbcceefb03a24a9b, type: 2}
+    second: {fileID: 2100000, guid: 99348d8121e342849b4bef3a9ec0e66f, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tires
-    second: {fileID: 2100000, guid: e3448f937336fb740bf16af80c01ec94, type: 2}
+    second: {fileID: 2100000, guid: bdc0dbd03f8fb28469f0f640561be9e0, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

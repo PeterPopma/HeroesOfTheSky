@@ -85,29 +85,25 @@ namespace HeneGames.Airplane
         [Header("Colliders")]
         [SerializeField] private Transform crashCollidersRoot;
 
-        [SerializeField] private GameObject planeMesh;
-
         [SerializeField] private GameObject pfRocket;
         [SerializeField] private Transform[] spawnPositionRocket = new Transform[2];
+
+        [SerializeField] private Transform vfxShootRocket;
+        [SerializeField] private AudioSource soundRocketFire;
+
+        [SerializeField] private AudioSource soundCrash;
+        [SerializeField] private Transform vfxCrash;
 
         private GameObject[] rocket = new GameObject[2];
         int currentRocket;
         bool spacebarPressed;
         float[] timeRocketFired = new float[2];
 
-        [SerializeField] private Transform pfRocketSmoke; 
-        private AudioSource soundRocketFire;
-
-        [SerializeField] private Transform vfxCrash;
-        [SerializeField] private Transform airplaneSpawnPosition;
-
-        public int Score;
-
         private Game scriptGame;
+        [SerializeField] private Transform airplaneSpawnPosition;
 
         private void Awake()
         {
-            soundRocketFire = GameObject.Find("/Sound/RocketFire").GetComponent<AudioSource>();
             scriptGame = GameObject.Find("/Scripts/Game").GetComponent<Game>();
         }
 
@@ -132,7 +128,7 @@ namespace HeneGames.Airplane
         private void CreateRocket(int rocketNumber)
         {
             rocket[rocketNumber] = Instantiate(pfRocket, spawnPositionRocket[rocketNumber].position, Quaternion.LookRotation(transform.forward, Vector3.up));
-            rocket[rocketNumber].name = "Rocket-" + (rocketNumber==0 ? "Left" : "Right");
+            rocket[rocketNumber].name = "Rocket-" + (rocketNumber == 0 ? "Left" : "Right");
             rocket[rocketNumber].transform.parent = transform;
         }
 
@@ -149,15 +145,15 @@ namespace HeneGames.Airplane
 
                 if (rocket[currentRocket].GetComponent<Rocket>().IsMoving == false)
                 {
-                    soundRocketFire.Play();
                     timeRocketFired[currentRocket] = Time.time;
                     rocket[currentRocket].GetComponent<Rocket>().IsMoving = true;
                     rocket[currentRocket].transform.SetParent(null);
-                    Instantiate(pfRocketSmoke, spawnPositionRocket[currentRocket].position, Quaternion.identity);
+                    soundRocketFire.Play();
+                    Instantiate(vfxShootRocket, spawnPositionRocket[currentRocket].position, Quaternion.identity);
                 }
 
                 currentRocket++;
-                if (currentRocket>1)
+                if (currentRocket > 1)
                 {
                     currentRocket = 0;
                 }
@@ -176,20 +172,6 @@ namespace HeneGames.Airplane
             }
         }
 
-        private void ResetGame()
-        {
-            scriptGame.SetGameState(GameState_.Playing);
-            transform.position = airplaneSpawnPosition.position;
-            transform.rotation = Quaternion.identity;
-            planeIsDead = false;
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            foreach (SimpleAirPlaneCollider collider in airPlaneColliders)
-            {
-                collider.collideSometing = false;
-            }
-        }
-
         private void Update()
         {
             AudioSystem();
@@ -199,6 +181,7 @@ namespace HeneGames.Airplane
             {
                 Movement();
                 UpdateRockets();
+
                 //Rotate propellers if any
                 if (propellers.Length > 0)
                 {
@@ -229,8 +212,21 @@ namespace HeneGames.Airplane
                     ResetGame();
                 }
             }
+        }
+        private void ResetGame()
+        {
+            scriptGame.SetGameState(GameState_.Playing);
+            transform.position = airplaneSpawnPosition.position;
+            transform.rotation = Quaternion.identity;
+            engineSoundSource.volume = 0.4f;
 
-
+            planeIsDead = false;
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            foreach (SimpleAirPlaneCollider collider in airPlaneColliders)
+            {
+                collider.collideSometing = false;
+            }
         }
 
         #region Movement
@@ -399,6 +395,7 @@ namespace HeneGames.Airplane
             //Set rigidbody to non cinematic
             rb.isKinematic = false;
             rb.useGravity = true;
+
             /*
             //Change every collider trigger state and remove rigidbodys
             for (int i = 0; i < airPlaneColliders.Count; i++)
@@ -407,11 +404,13 @@ namespace HeneGames.Airplane
                 Destroy(airPlaneColliders[i].GetComponent<Rigidbody>());
             }
             */
+
             //Kill player
             planeIsDead = true;
 
             //Here you can add your own code...
             Instantiate(vfxCrash, transform.position, Quaternion.identity);
+            soundCrash.Play();
             scriptGame.SetGameState(GameState_.GameOver);
         }
 

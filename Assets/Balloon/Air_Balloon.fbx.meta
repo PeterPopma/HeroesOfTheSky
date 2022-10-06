@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 27a1aebc3c38f5740941bd55512558f3
+guid: 9cb2c65c5353d83458a60048c4addf9b
 ModelImporter:
   serializedVersion: 22103
   internalIDToNameTable: []
@@ -8,42 +8,42 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Black
-    second: {fileID: 2100000, guid: 0f8139c679577444b80026cf058eaea9, type: 2}
+    second: {fileID: 2100000, guid: 0453e40b6f0fd88479a3aaaaea12f55d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: JetBlack
-    second: {fileID: 2100000, guid: 7196e8a4c4ada5e438745f7ee8c34c34, type: 2}
+    second: {fileID: 2100000, guid: a7e11936b47b7a54bbbefb28ec72f66c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.002
-    second: {fileID: 2100000, guid: baff1141d5d7f6048aa14250a75a6e84, type: 2}
+    second: {fileID: 2100000, guid: 0bb6700f7d8e1e44d9960f2c34db0e3a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Orange
-    second: {fileID: 2100000, guid: 28de02e46646b0b4bae8066a1ded4076, type: 2}
+    second: {fileID: 2100000, guid: a9c708582a92b174093c42af84da6d42, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Red
-    second: {fileID: 2100000, guid: fb6d0be5ef3a46940a769d59cf3a523a, type: 2}
+    second: {fileID: 2100000, guid: a4e9d764d05e8a244b9b125b30df531c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Tan
-    second: {fileID: 2100000, guid: f341685aa37644b4bb42f90aea5991b9, type: 2}
+    second: {fileID: 2100000, guid: f2a472ceeb548d643ad61ed39282763c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: White
-    second: {fileID: 2100000, guid: e88d623ee484b694091bc3319c8c0de1, type: 2}
+    second: {fileID: 2100000, guid: aa23c762b6af8cb44b266fa954e3d691, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Yellow
-    second: {fileID: 2100000, guid: 09674dc8aa2c67d4ab4cab753b5b81e5, type: 2}
+    second: {fileID: 2100000, guid: 1b0c32b40e3fda64a865bebda74d6e92, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

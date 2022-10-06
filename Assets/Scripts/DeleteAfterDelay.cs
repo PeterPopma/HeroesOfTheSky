@@ -9,6 +9,6 @@ public class DeleteAfterDelay : MonoBehaviour
 	{
 		delay -= Time.deltaTime;
 		if (delay < 0f)
-			GameObject.Destroy(this.gameObject);
+			Destroy(gameObject);
 	}
 }
