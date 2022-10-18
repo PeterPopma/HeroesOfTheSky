@@ -55,6 +55,7 @@ namespace Player
         [SerializeField] private TextMeshProUGUI textAltitude;
         [SerializeField] private TextMeshProUGUI textHeight;
         [SerializeField] private Transform needle;
+        [SerializeField] private RectTransform minimapAirplane;
 
         private GameObject[] rocket = new GameObject[2];
         int currentRocket;
@@ -145,6 +146,12 @@ namespace Player
             textAltitude.text = "altitude: " + altitude.ToString("0");
             textHeight.text = "above ground: " + (transform.position.y-Terrain.activeTerrain.SampleHeight(transform.position)).ToString("0");
             needle.rotation = Quaternion.Euler(0, 0, transform.rotation.eulerAngles.y);
+            // { -3659, 2924, 3943, -4919 } -> { -8, 138, 138, -8 }
+            float minimapXPos = (float)(138 - 146 * (transform.position.x + 3659) / 7602.0);
+            float minimapYPos = (float)(-8 + 146 * (transform.position.z + 4919) / 7843.0);
+            minimapAirplane.localPosition = new Vector3(minimapXPos, minimapYPos, 0);
+//            minimapAirplane.localPosition = new Vector3(0, -12 + 150, 0); // -> y 0 -> -150
+//            minimapAirplane.localPosition = new Vector3(0, -158 + 150, 0); // -> y 0 -> -150
 
             // Airplane move only if not dead
             if (!planeIsDead)
