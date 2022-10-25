@@ -5,6 +5,7 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
     [SerializeField] GameObject[] pfSpawnObjects;
+    [SerializeField] Transform rootTransform;
     [SerializeField] float secondsBetweenSpawns = 1;
     [SerializeField] int initialItems = 0;
     [SerializeField] float minX = -1500;
@@ -32,10 +33,12 @@ public class Spawner : MonoBehaviour
 
         Vector3 spawnPosition = new Vector3(Random.value * (maxX - minX) + minX, 2000, Random.value * (maxZ - minZ) + minZ);
         float Yoffset = Terrain.activeTerrain.SampleHeight(spawnPosition);
-        Instantiate(pfSpawnObjects[objectIndex], new Vector3(spawnPosition.x,
+        GameObject newObject = Instantiate(pfSpawnObjects[objectIndex], new Vector3(spawnPosition.x,
                                                 Yoffset + Random.value * (maxHeight - minHeight) + minHeight,
                                                 spawnPosition.z),
-                                                Quaternion.identity);
+                                                Quaternion.identity); 
+
+        newObject.transform.parent = rootTransform;
     }
 
     // Update is called once per frame

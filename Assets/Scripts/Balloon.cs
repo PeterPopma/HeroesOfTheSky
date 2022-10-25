@@ -14,7 +14,7 @@ public class Balloon : MonoBehaviour
     {
         scriptGame = GameObject.Find("/Scripts/Game").GetComponent<Game>();
         hitEffectSpawnPosition = transform.Find("HitEffectSpawnPosition");
-        soundRocketExplosion = GameObject.Find("/Sound/RocketExplosion").GetComponent<AudioSource>();
+        soundRocketExplosion = GameObject.Find("/Sound/MissileHit").GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -25,10 +25,10 @@ public class Balloon : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Rocket rocket = other.gameObject.GetComponent<Rocket>();
-        if (rocket != null && rocket.IsMoving)      // don't count the rockets on the wings
+        Missile missile = other.gameObject.GetComponent<Missile>();
+        if (missile != null && missile.IsMoving)      // don't count the rockets on the wings
         {
-            scriptGame.IncreaseScore(Convert.ToInt32(rocket.PointsWorth));
+            scriptGame.IncreaseScore(Convert.ToInt32(missile.PointsWorth));
             soundRocketExplosion.Play();
             Instantiate(vfxHit, hitEffectSpawnPosition.position, vfxHit.transform.rotation);
             Destroy(other.gameObject);

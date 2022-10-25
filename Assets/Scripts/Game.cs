@@ -14,11 +14,11 @@ public class Game : MonoBehaviour
     private int timeLeft;
     private float timeStarted;
     private GameState_ gameState;
+    private const int GAME_PLAYTIME = 300;
 
     public GameState_ GameState { get => gameState; set => gameState = value; }
     public int Score { get => score; set => score = value; }
 
-    [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textTimeLeft;
     [SerializeField] private TextMeshProUGUI textScoreGameOver;
     [SerializeField] private Transform panelGameOver;
@@ -32,7 +32,7 @@ public class Game : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timeLeft = (int)(100 - (Time.time - timeStarted));
+        timeLeft = (int)(GAME_PLAYTIME - (Time.time - timeStarted));
         if (timeLeft <= 0)
         {
             timeLeft = 0;
@@ -44,7 +44,6 @@ public class Game : MonoBehaviour
     public void IncreaseScore(int amount)
     {
         score += amount;
-        textScore.text = "Score: " + score.ToString("00000");
     }
 
     public void SetGameState(GameState_ newGameState)
@@ -59,7 +58,7 @@ public class Game : MonoBehaviour
                 break;
             case GameState_.Playing:
                 score = 0;
-                textScore.text = "Score: " + score.ToString("00000");
+                // TODO : set initial scores for player and enemy
                 timeStarted = Time.time;
                 panelGameOver.gameObject.SetActive(false);
                 break;
