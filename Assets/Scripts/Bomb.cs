@@ -1,3 +1,4 @@
+using AirplaneGame;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,7 @@ using UnityEngine;
 public class Bomb : MonoBehaviour
 {
     private AudioSource soundBombExplosion;
+    private Player scriptPlayer;
 
     private void Awake()
     {
@@ -23,14 +25,17 @@ public class Bomb : MonoBehaviour
 
     }
 
-    public void Activate()
+    public void Activate(Player scriptPlayer)
     {
+        this.scriptPlayer = scriptPlayer;
         GetComponent<BoxCollider>().enabled = true;
     }
 
     void OnTriggerEnter(Collider other)
     {
         CameraShake.Instance.ShakeCamera(60, 72f);
+        scriptPlayer.SoundBombDrop.Stop();
         soundBombExplosion.Play();
+        Destroy(gameObject);
     }
 }
