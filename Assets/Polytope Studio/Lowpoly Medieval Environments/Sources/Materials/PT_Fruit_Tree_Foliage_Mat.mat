@@ -2,20 +2,28 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PT_Fruit_Tree_Foliage_Mat
   m_Shader: {fileID: 4800000, guid: 77e1a76a38ecd5a46a270afb12894dd5, type: 3}
-  m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _CUSTOMWIND_ON _TRANSLUCENCYONOFF_ON
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _CUSTOMWIND_ON
+  - _TRANSLUCENCYONOFF_ON
+  m_InvalidKeywords:
+  - _ALPHAPREMULTIPLY_ON
+  - _CUSTOMCOLORSTINTING_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -63,9 +71,11 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _BumpScale: 1
-    - _CUSTOMCOLORSTINTING: 0
+    - _CUSTOMCOLORSTINTING: 1
     - _CUSTOMWIND: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -73,7 +83,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
-    - _Gradient: 0.123
+    - _Gradient: 0.117
     - _GradientPower: 1.74
     - _LeavesThickness: 0.5
     - _MaskClipValue: 0.5
@@ -92,9 +102,11 @@ Material:
     - _TRANSLUCENCYONOFF: 1
     - _TransAmbient: 0.7
     - _TransDirect: 1
+    - _TransNormal: 0.5
     - _TransNormalDistortion: 0.1
     - _TransScattering: 2
     - _TransShadow: 0.9
+    - _TransStrength: 1
     - _Translucency: 10
     - _UVSec: 0
     - _WINDMASKONOFF: 0
@@ -107,4 +119,5 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GroundColor: {r: 1, g: 0, b: 0, a: 1}
-    - _TopColor: {r: 0.5754717, g: 0.5186884, b: 0.04071733, a: 1}
+    - _TopColor: {r: 0.04598099, g: 0.1792453, b: 0, a: 1}
+  m_BuildTextureStacks: []

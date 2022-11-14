@@ -18,7 +18,7 @@ namespace AirplaneGame
 
         public void Start()
         {
-            scriptPlayer = transform.parent.parent.parent.GetComponent<Player>();
+            scriptPlayer = transform.parent.parent.GetComponent<Player>();
         }
 
         void OnTriggerEnter(Collider other)

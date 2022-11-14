@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2459471624460835323}
-  m_Layer: 0
+  - component: {fileID: 6598356227796059953}
+  m_Layer: 7
   m_Name: pfBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32,6 +33,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6598356227796059953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6162917504000562481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5bdbd8efd3f06f4a85949f9507438c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 300
 --- !u!1 &7927612197765807014
 GameObject:
   m_ObjectHideFlags: 0
@@ -43,8 +57,7 @@ GameObject:
   - component: {fileID: 7927612197765807034}
   - component: {fileID: 7927612197765807013}
   - component: {fileID: 7927612197765807012}
-  - component: {fileID: 6222404305509286608}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,16 +129,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6222404305509286608
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7927612197765807014}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5bdbd8efd3f06f4a85949f9507438c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 300

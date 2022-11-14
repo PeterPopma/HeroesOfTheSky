@@ -29,7 +29,7 @@ public class Missile : MonoBehaviour
             {
                 timeLastSmoke = Time.time;
                 Transform newFX = Instantiate(vfxSmoke, transform.position, Quaternion.identity);
-                newFX.parent = GameObject.Find("/PlaneFX").transform;
+                newFX.parent = GameObject.Find("/vFX").transform;
             }
 
             transform.position += transform.forward * (speed * Time.deltaTime);

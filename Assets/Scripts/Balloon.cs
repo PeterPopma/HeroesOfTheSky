@@ -28,7 +28,7 @@ public class Balloon : MonoBehaviour
         Missile missile = other.gameObject.GetComponent<Missile>();
         if (missile != null && missile.IsMoving)      // don't count the rockets on the wings
         {
-            scriptGame.IncreaseScore(Convert.ToInt32(missile.PointsWorth));
+//            scriptGame.IncreaseScore(Convert.ToInt32(missile.PointsWorth));
             soundRocketExplosion.Play();
             Instantiate(vfxHit, hitEffectSpawnPosition.position, vfxHit.transform.rotation);
             Destroy(other.gameObject);

@@ -6,7 +6,7 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] private float speed = 300;
     Vector3 moveDirection;
-
+    private float delay = 2.0f;
 
     public void Initialize(Vector3 moveDirection)
     {
@@ -23,5 +23,8 @@ public class Bullet : MonoBehaviour
     void Update()
     {
         transform.position += transform.forward * (speed * Time.deltaTime);
+        delay -= Time.deltaTime;
+        if (delay < 0f)
+            Destroy(gameObject);
     }
 }
