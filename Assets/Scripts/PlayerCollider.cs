@@ -9,6 +9,7 @@ namespace AirplaneGame
 
     public class PlayerCollider : MonoBehaviour
     {
+        private const float MINIMUM_DAMAGE_SPEED = 30;
         private Player scriptPlayer;
         private AudioSource soundBell;
         private void Awake()
@@ -43,7 +44,10 @@ namespace AirplaneGame
             }
             else if(!name.Equals("Icon"))
             {
-                scriptPlayer.Crash();
+                if (scriptPlayer.CurrentSpeed > MINIMUM_DAMAGE_SPEED)
+                {
+                    scriptPlayer.Crash();
+                }
             }
         }
     }

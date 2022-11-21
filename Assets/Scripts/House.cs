@@ -41,11 +41,11 @@ public class House : MonoBehaviour
 
         if (name.Equals("pfHouseRed"))
         {
-            scriptGame.HealthRed -= 5;
+            GlobalParams.HealthRed -= 5;
         }
         else
         {
-            scriptGame.HealthBlue -= 5;
+            GlobalParams.HealthBlue -= 5;
         }
         Transform newFX = Instantiate(vfxExplosion, transform.position, Quaternion.identity);
         newFX.parent = GameObject.Find("/vFX").transform;

@@ -12,14 +12,11 @@ public class Bomb : MonoBehaviour
     private Transform bomb;
     private bool active;
     private Vector3 speed;
-    private Vector3 oldPosition;
     private float detonationTime;
     private bool detonated;
-    private Game scriptGame;
 
     private void Awake()
     {
-        scriptGame = GameObject.Find("/Scripts/Game").GetComponent<Game>();
         soundBombExplosion = GameObject.Find("/Sound/BombExplosion").GetComponent<AudioSource>();
         cameraBomb = transform.Find("Camera");
         bomb = transform.Find("Bomb");
@@ -101,11 +98,11 @@ public class Bomb : MonoBehaviour
             {
                 if (collider.gameObject.name.Equals("pfHouseRed"))
                 {
-                    scriptGame.HealthRed -= 5;
+                    GlobalParams.HealthRed -= 5;
                 }
                 else
                 {
-                    scriptGame.HealthBlue -= 5;
+                    GlobalParams.HealthBlue -= 5;
                 }
                 Destroy(collider.gameObject);
             }

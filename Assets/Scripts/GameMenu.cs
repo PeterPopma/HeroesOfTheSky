@@ -36,14 +36,26 @@ public class GameMenu : MonoBehaviour
 
     public void OnToggleGraphicsClick()
     {
-        GlobalParams.DetailedGraphics = !GlobalParams.DetailedGraphics;
-        if (GlobalParams.DetailedGraphics)
+        GlobalParams.GraphicsDetailLevel++;
+        if (GlobalParams.GraphicsDetailLevel > 2)
         {
-            textGraphics.text = "High";
+            GlobalParams.GraphicsDetailLevel = 0;
         }
-        else
+
+        switch(GlobalParams.GraphicsDetailLevel)
         {
-            textGraphics.text = "Low";
+            case 0:
+                QualitySettings.SetQualityLevel(0);
+                textGraphics.text = "Low";
+                break;
+            case 1:
+                QualitySettings.SetQualityLevel(1);
+                textGraphics.text = "Medium";
+                break;
+            case 2:
+                QualitySettings.SetQualityLevel(2);
+                textGraphics.text = "High";
+                break;
         }
     }
 
@@ -72,7 +84,7 @@ public class GameMenu : MonoBehaviour
     {
         //        GlobalParams.GameMode = selectedGameMode;
 //        textLoading.enabled = true;
-        SceneManager.LoadSceneAsync("Scene1");
+        SceneManager.LoadSceneAsync("Level1");
 
     }
 

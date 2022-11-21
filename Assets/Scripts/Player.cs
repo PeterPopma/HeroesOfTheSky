@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using TMPro;
-using UnityEngine.UI;
 
 namespace AirplaneGame
 {
@@ -13,7 +12,6 @@ namespace AirplaneGame
         private bool isCrashed;
         private bool isRedPlane;
         private const float MINIMUM_FLY_SPEED = 30;
-        private const float MINIMUM_DAMAGE_SPEED = 30;
 
         [Header("Rotating speeds")]
         [Range(5f, 500f)]
@@ -49,13 +47,21 @@ namespace AirplaneGame
         [SerializeField] private Transform crossHair;
 
         [SerializeField] private Transform vfxShootRocket;
-        [SerializeField] private AudioSource soundRocketFire;
-
-        [SerializeField] private AudioSource soundCrash;
         [SerializeField] private Transform vfxCrash;
 
+        [SerializeField] private AudioSource soundRocketFire;
+        [SerializeField] private AudioSource soundCrash;
         [SerializeField] private AudioSource soundBombDrop;
         [SerializeField] private AudioSource soundGun;
+
+        [SerializeField] private LayerMask gunfireLayerMask;
+
+        private Transform airplaneSpawnPosition;
+        private Transform staticAirplaneSpawnPosition;
+        private Transform pfStaticAirplane;
+
+        private Collider colliderAirplaneBody;
+        private Collider colliderLandingZone;
 
         private List<Transform> planesLeft = new List<Transform>();
 
@@ -71,6 +77,8 @@ namespace AirplaneGame
         private TextMeshProUGUI textMissiles;
         private TextMeshProUGUI textAirplanes;
         private TextMeshProUGUI textWind;
+        private TextMeshProUGUI textResupplied;
+        
         private RectTransform windNeedle;
         private RectTransform compassNeedle;
         private RectTransform fuelNeedle;
@@ -86,8 +94,9 @@ namespace AirplaneGame
         private GameObject bomb;
         float timeGunFired;
         float timeCrashed;
+        float timeLeftShowResupplied;
 
-        float windSpeed = 2.5f;            // speed 0..5
+        float windSpeed = 2.5f;     // speed 0..5
         float windSpeedChange;      // -0.1 .. 0.1
         float windDirection;        // 0..360
         float windDirectionChange;  // -0.1 .. 0.1
@@ -110,16 +119,26 @@ namespace AirplaneGame
         bool buttonYawRight;
         bool buttonRestart;
         bool buttonHelp;
+        bool isLanded;
 
         int numAirplanes;
         int numMissiles;
         int numBombs;
         float amountFuel;           // fuel 0..100
+        float distanceTravelled;
 
         public AudioSource SoundBombDrop { get => soundBombDrop; set => soundBombDrop = value; }
         public Vector3 Speed { get => speed; set => speed = value; }
         public bool BombDropping { get => bombDropping; set => bombDropping = value; }
         public bool IsRedPlane { get => isRedPlane; set => isRedPlane = value; }
+        public int NumAirplanes { get => numAirplanes; set => numAirplanes = value; }
+        public float CurrentSpeed { get => currentSpeed; set => currentSpeed = value; }
+        public Collider ColliderLandingZone { get => colliderLandingZone; set => colliderLandingZone = value; }
+
+        public Transform AirplaneSpawnPosition { get => airplaneSpawnPosition; set => airplaneSpawnPosition = value; }
+        public Transform StaticAirplaneSpawnPosition { get => staticAirplaneSpawnPosition; set => staticAirplaneSpawnPosition = value; }
+        public Transform PfStaticAirplane { get => pfStaticAirplane; set => pfStaticAirplane = value; }
+        public float DistanceTravelled { get => distanceTravelled; set => distanceTravelled = value; }
 
         private void Awake()
         {
@@ -139,15 +158,19 @@ namespace AirplaneGame
             fuelNeedle = GameObject.Find("/Canvas/Fuel/FuelNeedle").GetComponent<RectTransform>();
             fuelLight = GameObject.Find("/Canvas/Fuel/FuelLight").GetComponent<RectTransform>();
             throttleBar = GameObject.Find("/Canvas/PanelTop/Throttle/ThrottleBar").GetComponent<RectTransform>();
+            colliderAirplaneBody = transform.Find("Colliders/Body").GetComponent<Collider>();
+            textResupplied = GameObject.Find("/Canvas/TextResupplied").GetComponent<TextMeshProUGUI>();
         }
 
         private void Start()
         {
-            if(GlobalParams.WindStrength==0)
+            if (GlobalParams.WindStrength==0)
             {
                 textWind.enabled = false;
                 windNeedle.gameObject.SetActive(false);
             }
+
+            textResupplied.enabled = false;
 
             CreateMissile(0);
             CreateMissile(1);
@@ -234,6 +257,19 @@ namespace AirplaneGame
             if (currentBullet > 1)
             {
                 currentBullet = 0;
+            }
+
+            if (Physics.Raycast(spawnPositionBullet[currentBullet].position, transform.TransformDirection(Vector3.forward), out RaycastHit raycastHit, 800f, gunfireLayerMask))
+            {
+                // Only player is in the mask, so this means a player was hit
+                Transform hitTransForm = raycastHit.transform;
+                // Don't hit own plane
+                if ((hitTransForm.parent.parent.name.Equals("player_blue") && isRedPlane == false) || 
+                    (hitTransForm.parent.parent.name.Equals("player_red") && isRedPlane == true))
+                {
+                    return;
+                }
+                scriptGame.GetOtherPlayer(this).Crash();
             }
         }
 
@@ -352,6 +388,15 @@ namespace AirplaneGame
                 Canvas canvasHelp = GameObject.Find("CanvasHelp").GetComponent<Canvas>();
                 canvasHelp.enabled = !canvasHelp.enabled;
             }
+
+            if (timeLeftShowResupplied>0)
+            {
+                timeLeftShowResupplied -= Time.deltaTime;
+                if (timeLeftShowResupplied<=0)
+                {
+                    textResupplied.enabled = false;
+                }
+            }
             
             UpdateWind();
 
@@ -392,12 +437,30 @@ namespace AirplaneGame
                 {
                     RotatePropellors(propellors);
                 }
+
+                if (amountFuel<=0)
+                {
+                    throttle = 0;
+                    throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle);
+
+                    if (speed.magnitude < 2)
+                    {
+                        Crash();
+                    }
+                }
+
+                bool nowLanded = heightAboveGround < 3 && speed.magnitude < 5 && colliderAirplaneBody.bounds.Intersects(colliderLandingZone.bounds);
+                if (!isLanded && nowLanded)
+                {
+                    ReplenishPlane();
+                }
+                isLanded = nowLanded;
             }
             else
             {
                 if (!scriptGame.GameState.Equals(GameState_.GameOver) && Time.time - timeCrashed > 4)
                 {
-                    ResetPlayer();
+                    ResetAfterCrash();
                 }
             }
 
@@ -407,64 +470,67 @@ namespace AirplaneGame
             }
         }
 
-        private void ResetGame()
+        public void ResetGame()
         {
+            distanceTravelled = 0;
             numAirplanes = 5;
             for (int i = 0; i < numAirplanes-1; i++)
             {
-                if (isRedPlane)
-                {
-                    Transform redPlayer = Instantiate(scriptGame.PfStaticAirplaneRed);
-                    redPlayer.position = new Vector3(scriptGame.StaticAirplaneSpawnPositionRed.position.x + 15 * i, scriptGame.StaticAirplaneSpawnPositionRed.position.y, scriptGame.StaticAirplaneSpawnPositionRed.position.z);
-                    redPlayer.rotation = scriptGame.StaticAirplaneSpawnPositionRed.rotation;
-                    redPlayer.parent = GameObject.Find("Planes").transform;
-                    planesLeft.Add(redPlayer);
-                }
-                else
-                {
-                    Transform bluePlayer = Instantiate(scriptGame.PfStaticAirplaneBlue);
-                    bluePlayer.position = new Vector3(scriptGame.StaticAirplaneSpawnPositionBlue.position.x, scriptGame.StaticAirplaneSpawnPositionBlue.position.y, scriptGame.StaticAirplaneSpawnPositionBlue.position.z - 20 * i);
-                    bluePlayer.rotation = scriptGame.StaticAirplaneSpawnPositionBlue.rotation;
-                    bluePlayer.parent = GameObject.Find("Planes").transform;
-                    planesLeft.Add(bluePlayer);
-                }
+                Transform player = Instantiate(scriptGame.PfStaticAirplaneRed);
+                player.position = new Vector3(staticAirplaneSpawnPosition.position.x + 15 * i, staticAirplaneSpawnPosition.position.y, staticAirplaneSpawnPosition.position.z);
+                player.rotation = staticAirplaneSpawnPosition.rotation;
+                player.parent = GameObject.Find("Planes").transform;
+                planesLeft.Add(player);
             }
-            ResetPlayer();
-            scriptGame.SetGameState(GameState_.Playing);
+            ResetAfterCrash();
         }
 
-        private void ResetPlayer()
+        private void ReplenishPlane()
         {
+            textResupplied.enabled = true;
+            timeLeftShowResupplied = 3;
+
+            if (numMissiles<10)
+            {
+                numMissiles = 10;
+                textMissiles.text = numMissiles.ToString();
+            }
+            if (numBombs < 3)
+            {
+                numBombs = 3;
+                textBombs.text = numBombs.ToString();
+            }
+            if (amountFuel < 80)
+            {
+                amountFuel = 80;
+            }
+            transform.SetPositionAndRotation(airplaneSpawnPosition.position, airplaneSpawnPosition.rotation);
+        }
+
+        private void ResetAfterCrash()
+        {
+            isLanded = true;
             bombDropping = false;
             timeMissileFired[0] = timeMissileFired[1] = Time.time;
             throttle = currentSpeed = 0;
-            throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle * 1.25f);
+            throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle);
 
             fuelLight.gameObject.SetActive(false);
-            if(isRedPlane)
-            {
-                transform.position = scriptGame.AirplaneSpawnPositionRed.position;
-                transform.rotation = scriptGame.AirplaneSpawnPositionRed.rotation;
-            }
-            else
-            {
-                transform.position = scriptGame.AirplaneSpawnPositionBlue.position;
-                transform.rotation = scriptGame.AirplaneSpawnPositionBlue.rotation;
-            }
-//            engineSoundSource.volume = 0.4f;
+            transform.SetPositionAndRotation(airplaneSpawnPosition.position, airplaneSpawnPosition.rotation);
+
+            //            engineSoundSource.volume = 0.4f;
 
             isCrashed = false;
             GetComponent<Rigidbody>().isKinematic = true;
             GetComponent<Rigidbody>().useGravity = false;
 
             numMissiles = 10;
-            numBombs = 13;
+            numBombs = 3;
             amountFuel = 80;
 
             textMissiles.text = numMissiles.ToString();
             textBombs.text = numBombs.ToString();
             textAirplanes.text = numAirplanes.ToString();
-
         }
 
         private void OnYawLeft(InputValue value)
@@ -501,7 +567,7 @@ namespace AirplaneGame
         {
             Vector3 oldPosition = transform.position;
 
-            //Move forward
+            // Move forward
             transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
 
             if (currentSpeed > MINIMUM_FLY_SPEED)
@@ -536,7 +602,7 @@ namespace AirplaneGame
                     {
                         throttle = 100;
                     }
-                    throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle * 1.25f);
+                    throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle);
                 }
             }
             if (buttonDecelerate)
@@ -548,7 +614,7 @@ namespace AirplaneGame
                     {
                         throttle = 0;
                     }
-                    throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle * 1.25f);
+                    throttleBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, throttle);
                 }
             }
 
@@ -571,8 +637,9 @@ namespace AirplaneGame
             {
                 currentSpeed -= speedAcceleration * Time.deltaTime;
             }
+            distanceTravelled += (transform.position - oldPosition).magnitude;
             speed = (transform.position - oldPosition) / Time.deltaTime;
-            textSpeed.text = "Speed: " + speed.magnitude.ToString("0");
+            textSpeed.text = "Speed: " + ((int)speed.magnitude).ToString();
 
             float pitch = speed.magnitude / 100;
             if (pitch < 0.8)
@@ -599,11 +666,7 @@ namespace AirplaneGame
             {
                 return;
             }
-            if (currentSpeed < MINIMUM_DAMAGE_SPEED)
-            {
-                // Too slow to crash
-                return;
-            }
+
             // Set rigidbody to non-kinematic
             GetComponent<Rigidbody>().isKinematic = false;
             GetComponent<Rigidbody>().useGravity = true;
@@ -615,7 +678,10 @@ namespace AirplaneGame
             Instantiate(vfxCrash, transform.position, Quaternion.identity);
             soundCrash.Play();
 
-            numAirplanes--;
+            if (!scriptGame.GameState.Equals(GameState_.WaitingForSecondPLayer))
+            {
+                numAirplanes--;
+            }
             Destroy(planesLeft[numAirplanes-1].gameObject);
             textAirplanes.text = numAirplanes.ToString();
             if (numAirplanes == 0)
