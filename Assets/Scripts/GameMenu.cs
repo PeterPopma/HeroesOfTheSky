@@ -36,13 +36,13 @@ public class GameMenu : MonoBehaviour
 
     public void OnToggleGraphicsClick()
     {
-        GlobalParams.GraphicsDetailLevel++;
-        if (GlobalParams.GraphicsDetailLevel > 2)
+        Settings.GraphicsDetailLevel++;
+        if (Settings.GraphicsDetailLevel > 2)
         {
-            GlobalParams.GraphicsDetailLevel = 0;
+            Settings.GraphicsDetailLevel = 0;
         }
 
-        switch(GlobalParams.GraphicsDetailLevel)
+        switch(Settings.GraphicsDetailLevel)
         {
             case 0:
                 QualitySettings.SetQualityLevel(0);
@@ -61,14 +61,14 @@ public class GameMenu : MonoBehaviour
 
     public void OnToggleWindClick()
     {
-        if (GlobalParams.WindStrength==0)
+        if (Settings.WindStrength==0)
         {
-            GlobalParams.WindStrength = 10;
+            Settings.WindStrength = 10;
             textWind.text = "On";
         }
         else
         {
-            GlobalParams.WindStrength = 0;
+            Settings.WindStrength = 0;
             textWind.text = "Off";
         }
     }

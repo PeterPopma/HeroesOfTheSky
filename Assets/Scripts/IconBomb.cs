@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,6 @@ public class IconBomb : MonoBehaviour
     public void HitTarget()
     {
         Instantiate(vfxHit, transform.position, vfxHit.transform.rotation);
-        Destroy(gameObject);
+        PhotonNetwork.Destroy(gameObject);
     }
 }

@@ -6,8 +6,9 @@ using UnityEngine;
 public class Bomb : MonoBehaviour
 {
     [SerializeField] private Transform vfxExplosion;
-    private AudioSource soundBombExplosion;
+    [SerializeField] private AudioSource soundBombExplosion;
     private Player scriptPlayer;
+    private Game scriptGame;
     private Transform cameraBomb;
     private Transform bomb;
     private bool active;
@@ -17,9 +18,9 @@ public class Bomb : MonoBehaviour
 
     private void Awake()
     {
-        soundBombExplosion = GameObject.Find("/Sound/BombExplosion").GetComponent<AudioSource>();
         cameraBomb = transform.Find("Camera");
-        bomb = transform.Find("Bomb");
+        bomb = transform.Find("Bomb"); 
+        scriptGame = GameObject.Find("/Scripts/Game").GetComponent<Game>();
     }
 
     public void SetPlayerScript(Player player)
@@ -41,8 +42,8 @@ public class Bomb : MonoBehaviour
         {
             if (!detonated)
             {
-                bomb.Rotate(0,Time.deltaTime * 500,0);
-                transform.Translate(speed * Time.deltaTime);
+                bomb.Rotate(0, Time.deltaTime * 500, 0, Space.Self);
+                transform.Translate(speed * Time.deltaTime, Space.World);
                 float Yoffset = Terrain.activeTerrain.SampleHeight(transform.position);
                 if (transform.position.y<Yoffset+10)
                 {
@@ -63,14 +64,16 @@ public class Bomb : MonoBehaviour
     public void Activate(Player scriptPlayer)
     {
         transform.SetParent(null);
-        GetComponent<Rigidbody>().isKinematic = false;
-//        GetComponent<Rigidbody>().useGravity = true;
         GetComponent<BoxCollider>().enabled = true;
-        // place camera above bomb, looking down
-        transform.rotation = Quaternion.Euler(0, scriptPlayer.transform.rotation.y, 0);
+
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
         cameraBomb.gameObject.SetActive(true);
-        speed = scriptPlayer.Speed; 
+        speed = scriptPlayer.Speed;
         speed.y = -50;
+        float angle = (float)(Mathf.Atan2(speed.normalized.z, speed.normalized.x) * 180.0 / Mathf.PI);
+        // rotate bomb and camera towards moving direction
+        bomb.rotation = Quaternion.Euler(new Vector3(90, 0, angle - 90));
+        cameraBomb.rotation = Quaternion.Euler(new Vector3(90, 0, angle - 90));
         active = true;
     }
 
@@ -96,13 +99,13 @@ public class Bomb : MonoBehaviour
         {
             if (collider.gameObject.GetComponent<House>() != null)
             {
-                if (collider.gameObject.name.Equals("pfHouseRed"))
+                if (name.Equals("pfHouseRed"))
                 {
-                    GlobalParams.HealthRed -= 5;
+                    scriptGame.PlayerRed.GetComponent<Player>().DecreaseHealth();
                 }
                 else
                 {
-                    GlobalParams.HealthBlue -= 5;
+                    scriptGame.PlayerBlue.GetComponent<Player>().DecreaseHealth();
                 }
                 Destroy(collider.gameObject);
             }

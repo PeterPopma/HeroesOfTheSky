@@ -1,3 +1,5 @@
+using AirplaneGame;
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,14 +41,12 @@ public class House : MonoBehaviour
             return;
         }
 
-        if (name.Equals("pfHouseRed"))
+        if (other.name.Equals("pfBomb"))
         {
-            GlobalParams.HealthRed -= 5;
+            // Bomb has its own collision detection
+            return;
         }
-        else
-        {
-            GlobalParams.HealthBlue -= 5;
-        }
+
         Transform newFX = Instantiate(vfxExplosion, transform.position, Quaternion.identity);
         newFX.parent = GameObject.Find("/vFX").transform;
         isDestroyed = true;
@@ -55,5 +55,14 @@ public class House : MonoBehaviour
         rigidbody.AddForce(new Vector3(Random.Range(-30f, 30f), 10, Random.Range(-30f, 30f)), ForceMode.Impulse);
         rigidbody.AddTorque(new Vector3(Random.Range(-2, 2), Random.Range(-2, 2), Random.Range(-2, 2)), ForceMode.VelocityChange);
         rigidbody.useGravity = true;
+
+        if (name.StartsWith("pfHouseRed"))
+        {
+            scriptGame.PlayerRed.GetComponent<Player>().DecreaseHealth();
+        }
+        else
+        {
+            scriptGame.PlayerBlue.GetComponent<Player>().DecreaseHealth();
+        }
     }
 }

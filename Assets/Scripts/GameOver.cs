@@ -41,8 +41,8 @@ public class GameOver : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        textReason.text = GlobalParams.GameOverReason;
-        if (GlobalParams.PlayerWon==0)
+        textReason.text = GameStats.GameOverReason;
+        if (GameStats.PlayerWon==0)
         {
             textWonRed.enabled = true;
             textWonBlue.enabled = false;
@@ -50,7 +50,7 @@ public class GameOver : MonoBehaviour
             imageFlagRed.enabled = true;
             imageFlagBlue.enabled = false;
         }
-        else if(GlobalParams.PlayerWon == 1)
+        else if(GameStats.PlayerWon == 1)
         {
             textWonRed.enabled = false;
             textWonBlue.enabled = true;
@@ -66,10 +66,10 @@ public class GameOver : MonoBehaviour
             imageFlagRed.enabled = false;
             imageFlagBlue.enabled = false;
         }
-        textHealthRed.text = GlobalParams.HealthRed + " %";
-        textHealthBlue.text = GlobalParams.HealthBlue + " %";
-        textDistanceRed.text = GlobalParams.DistanceRed.ToString("0.0");
-        textDistanceBlue.text = GlobalParams.DistanceBlue.ToString("0.0");
+        textHealthRed.text = GameStats.HealthRed + " %";
+        textHealthBlue.text = GameStats.HealthBlue + " %";
+        textDistanceRed.text = GameStats.DistanceRed.ToString("0.0");
+        textDistanceBlue.text = GameStats.DistanceBlue.ToString("0.0");
     }
 
     // Update is called once per frame
