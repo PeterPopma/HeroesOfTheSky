@@ -40,10 +40,12 @@ namespace AirplaneGame
         [SerializeField] private Transform[] spawnPositionMissile = new Transform[2];
         [SerializeField] private Transform[] spawnPositionBullet = new Transform[2];
         [SerializeField] private Transform spawnPositionBomb;
+        [SerializeField] private Transform spawnPositionSmoke;
         [SerializeField] private Transform crossHair;
 
         [SerializeField] private Transform vfxShootRocket;
         [SerializeField] private Transform vfxCrash;
+        [SerializeField] private Transform vfxSmoke;
 
         [SerializeField] private AudioSource soundEngine;
         [SerializeField] private AudioSource soundMissile;
@@ -119,6 +121,8 @@ namespace AirplaneGame
         private float heightAboveGround;
 
         Vector2 movement;
+        private float movementX;
+        private float movementY;
         bool buttonAccelerate;
         bool buttonDecelerate;
         bool buttonFire;
@@ -128,7 +132,8 @@ namespace AirplaneGame
         bool buttonRestart;
         bool buttonHelp;
         bool isLanded;
-        bool playerStatsReceived;
+        private float smokeAmount;
+        private float smokeAmountLimit = 0;
 
         int numAirplanes;
         int numMissiles;
@@ -152,7 +157,6 @@ namespace AirplaneGame
         public float MinimapPositionY { get => minimapPositionY; set => minimapPositionY = value; }
         public float MinimapRotationY { get => minimapRotationY; set => minimapRotationY = value; }
         public PhotonView PhotonView { get => photonView; set => photonView = value; }
-        public bool PlayerStatsReceived { get => playerStatsReceived; set => playerStatsReceived = value; }
         public int Health { get => health; set => health = value; }
 
         private void Awake()
@@ -214,6 +218,46 @@ namespace AirplaneGame
         }
 
         [PunRPC]
+        public void SetPlayerStats(int viewID, float distanceOther, int healthOther, int numAirplanesOther)
+        {
+            if (photonView.ViewID == viewID)
+            {
+                scriptGame.SetGameOverInfo(distanceOther, healthOther, numAirplanesOther);
+            }
+        }
+
+
+        [PunRPC]
+        public void EndGame(int viewID)
+        {
+            if (photonView.ViewID == viewID)
+            {
+                scriptGame.SetGameState(GameState_.CollectingGameStatistics);
+            }
+        }
+
+        [PunRPC]
+        public void StartGameBluePlayer(int viewID)
+        {
+            if (photonView.ViewID == viewID)
+            {
+                scriptGame.SetGameState(GameState_.Playing);
+            }
+        }
+
+        [PunRPC]
+        public void StartGameRedPlayer(int viewID)
+        {
+            if (photonView.ViewID == viewID)
+            {
+                scriptGame.SpawnHouses();
+                scriptGame.PowerUpSpawner.SpawnPowerUps();
+                scriptGame.SetGameState(GameState_.Playing);
+                photonView.RPC("StartGameBluePlayer", RpcTarget.Others, photonView.ViewID);
+            }
+        }
+
+        [PunRPC]
         public void ChangePlaneColor(int viewID, string colorName)
         {
             if (photonView.ViewID == viewID)
@@ -242,51 +286,11 @@ namespace AirplaneGame
         }
 
         [PunRPC]
-        public void EndGame(int viewID)
-        {
-            if (photonView.ViewID == viewID)
-            {
-                scriptGame.SetGameState(GameState_.WaitingForSecondPlayerStats);
-            }
-        }
-
-        [PunRPC]
-        public void StartGameSecondPlayer(int viewID)
-        {
-            if (photonView.ViewID == viewID)
-            {
-                scriptGame.SetGameState(GameState_.Playing);
-            }
-        }
-
-        [PunRPC]
-        public void StartGame(int viewID)
-        {
-            if (photonView.ViewID == viewID)
-            {
-                scriptGame.SpawnHouses();
-                scriptGame.PowerUpSpawner.SpawnPowerUps();
-                scriptGame.SetGameState(GameState_.Playing); 
-                photonView.RPC("StartGameSecondPlayer", RpcTarget.Others, photonView.ViewID);
-            }
-        }
-
-        [PunRPC]
         public void SetHealth(int viewID, int health)
         {
             if (photonView.ViewID == viewID)
             {
                 this.health = health;
-            }
-        }
-
-        [PunRPC]
-        public void SetPlayerStats(int viewID, float distanceTravelled)
-        {
-            if (photonView.ViewID == viewID)
-            {
-                this.distanceTravelled = distanceTravelled;
-                playerStatsReceived = true;
             }
         }
 
@@ -325,7 +329,7 @@ namespace AirplaneGame
         public void DecreaseHealth()
         {
             health -= 5;
-            photonView.RPC("SetHealth", RpcTarget.Others, photonView.ViewID, health);
+            photonView.RPC("SetHealth", RpcTarget.All, photonView.ViewID, health);
         }
 
         private void OnRestart(InputValue value)
@@ -376,6 +380,7 @@ namespace AirplaneGame
         private void CreateMissile(int missileNumber)
         {
             missile[missileNumber] = Instantiate(pfMissile, spawnPositionMissile[missileNumber].position, Quaternion.LookRotation(transform.forward, Vector3.up));
+            missile[missileNumber].GetComponent<Missile>().OwnerIsRed = isRedPlane;
             missile[missileNumber].name = "Missile-" + (missileNumber == 0 ? "Left" : "Right");
             missile[missileNumber].transform.parent = transform;
         }
@@ -472,7 +477,7 @@ namespace AirplaneGame
                 }
             }
 
-            if (buttonFire)
+            if (buttonFire && scriptGame.TimeLeftShowStarted<=0)
             {
                 if (currentWeapon == 0)
                 {
@@ -539,6 +544,10 @@ namespace AirplaneGame
             {
                 return;
             }
+            if (!scriptGame.GameState.Equals(GameState_.Playing) && !scriptGame.GameState.Equals(GameState_.WaitingForSecondPlayer))
+            {
+                return;
+            }
 
             if (buttonHelp)
             {
@@ -593,6 +602,14 @@ namespace AirplaneGame
                     GetComponent<Rigidbody>().isKinematic = true;
                 }
 
+                smokeAmount += throttle * Time.deltaTime * Random.value;
+                if (smokeAmount > smokeAmountLimit)
+                {
+                    smokeAmountLimit = Random.value * 25;
+                    smokeAmount = 0;
+                    Instantiate(vfxSmoke, spawnPositionSmoke.position, Quaternion.identity); 
+                }
+
                 // Rotate propellers if any
                 if (propellors.Length > 0)
                 {
@@ -633,7 +650,6 @@ namespace AirplaneGame
 
         public void ResetGame()
         {
-            playerStatsReceived = false;
             soundWind.volume = 0.0f;
             distanceTravelled = 0;
             photonView.RPC("SetNumAirplanes", RpcTarget.All, photonView.ViewID, 5, isRedPlane);
@@ -733,23 +749,56 @@ namespace AirplaneGame
                 transform.position += new Vector3(windChangeX, 0, windChangeZ);
             }
 
+            if (movement.x == 1 || movement.x == -1)
+            {
+                movementX = movement.x;
+            }
+            else if (movementX!=0)
+            {
+                // slowly die out
+                movementX *= Mathf.Pow(0.01f, Time.deltaTime);
+                if (Mathf.Abs(movementX) < 0.01f)
+                {
+                    movementX = 0;
+                }
+            }
+
+            if (movement.y == 1 || movement.y == -1)
+            {
+                movementY = movement.y;
+            }
+            else if (movementY != 0)
+            {
+                // slowly die out
+                movementY *= Mathf.Pow(0.01f, Time.deltaTime);
+                if (Mathf.Abs(movementY) < 0.01f)
+                {
+                    movementY = 0;
+                }
+            }
+
             // Rotate airplane by inputs
             if (currentSpeed > MINIMUM_FLY_SPEED)
             {
-                transform.Rotate(Vector3.forward * -movement.x * rollSpeed * Time.deltaTime);
-                transform.Rotate(Vector3.right * movement.y * pitchSpeed * Time.deltaTime);
+                transform.Rotate(Vector3.forward * -movementX * rollSpeed * Time.deltaTime);
+                transform.Rotate(Vector3.right * movementY * pitchSpeed * Time.deltaTime);
             }
 
             // Move back to straight
             // TODO : not right yet
+            /*
             if (transform.rotation.z < 0)
             {
-                transform.Rotate(Vector3.forward * 25f * Time.deltaTime);
+                transform.Rotate(Vector3.forward * 125f * Time.deltaTime);
             }
             if (transform.rotation.z > 0)
             {
-                transform.Rotate(Vector3.forward * -25f * Time.deltaTime);
+                transform.Rotate(Vector3.forward * -125f * Time.deltaTime);
             }
+            
+            Debug.Log("rotation:" + transform.rotation.x.ToString("0.00") + "," + transform.rotation.y.ToString("0.00") + "," + transform.rotation.z.ToString("0.00"));
+             */
+
 
             // Rotate yaw
             if (buttonYawRight)

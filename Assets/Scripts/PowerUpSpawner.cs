@@ -1,3 +1,4 @@
+using AirplaneGame;
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,11 +6,11 @@ using UnityEngine;
 
 public class PowerUpSpawner : MonoBehaviour
 {
-    [SerializeField] List<string> objectNames = new List<string>()
+    List<string> objectNames = new List<string>()
         {
-            "pfIconBomb",
-            "pfIconFuel",
-            "pfIconMissile"
+            "pfPowerupBomb",
+            "pfPowerupFuel",
+            "pfPowerupMissile"
         };
     [SerializeField] Transform rootTransform;
     [SerializeField] int initialItems = 0;
@@ -22,16 +23,15 @@ public class PowerUpSpawner : MonoBehaviour
 
     public void Start()
     {
-        objectNames.Add("pfIconBomb");
     }
 
     public void SpawnPowerUps()
     {
-        // Delete any existing powerups
-        GameObject[] existingObjects = GameObject.FindGameObjectsWithTag("powerup");
-        foreach (GameObject existingObject in existingObjects)
+        // Delete any existing powerups in scene
+        var myPowerups = FindObjectsOfType(typeof(Powerup)); 
+        foreach (Powerup powerup in myPowerups)
         {
-            PhotonNetwork.Destroy(existingObject);
+            powerup.Destroy();
         }
 
         for (int i = 0; i < initialItems; i++)
@@ -46,10 +46,9 @@ public class PowerUpSpawner : MonoBehaviour
 
         Vector3 spawnPosition = new Vector3(Random.value * (maxX - minX) + minX, 2000, Random.value * (maxZ - minZ) + minZ);
         float Yoffset = Terrain.activeTerrain.SampleHeight(spawnPosition);
-        PhotonNetwork.Instantiate(objectName, new Vector3(spawnPosition.x,
+        GameObject newPowerUp = PhotonNetwork.Instantiate(objectName, new Vector3(spawnPosition.x,
                                                 Yoffset + Random.value * (maxHeight - minHeight) + minHeight,
                                                 spawnPosition.z), Quaternion.identity);
-
     }
 
 }

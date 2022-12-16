@@ -12,7 +12,7 @@ public enum GameState_
     JoiningNetworkGame,
     WaitingForSecondPlayer,
     Playing,
-    WaitingForSecondPlayerStats,
+    CollectingGameStatistics,
     GameOver
 }
 
@@ -29,6 +29,8 @@ public class Game : MonoBehaviour
     public GameObject PlayerRed { get => playerRed; set => playerRed = value; }
     public GameObject PlayerBlue { get => playerBlue; set => playerBlue = value; }
     public PowerUpSpawner PowerUpSpawner { get => powerUpSpawner; set => powerUpSpawner = value; }
+    public float TimeLeftShowStarted { get => timeLeftShowStarted; set => timeLeftShowStarted = value; }
+    public bool OtherPlayerStatsReceived { get => otherPlayerStatsReceived; set => otherPlayerStatsReceived = value; }
 
     [SerializeField] private RectTransform minimapAirplaneRed;
     [SerializeField] private RectTransform minimapAirplaneBlue;
@@ -37,6 +39,7 @@ public class Game : MonoBehaviour
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private GameObject panelStatus;
     [SerializeField] private TextMeshProUGUI textTryOutMode;
+    [SerializeField] private TextMeshProUGUI textStartingGame;
 
     [SerializeField] private Transform pfStaticAirplaneRed;
     [SerializeField] private Transform pfStaticAirplaneBlue;
@@ -45,12 +48,15 @@ public class Game : MonoBehaviour
     [SerializeField] private GameTimer gameTimer;
     [SerializeField] private Canvas canvasConnecting;
     [SerializeField] private PowerUpSpawner powerUpSpawner;
+    [SerializeField] private PhotonServer scriptPhotonServer;
 
     GameObject ownPlayer;
     GameObject otherPlayer;
     GameObject playerRed;
     GameObject playerBlue;
     Player scriptOwnPlayer;
+    float timeLeftShowStarted;
+    bool otherPlayerStatsReceived;
 
 
     private void Awake()
@@ -78,13 +84,14 @@ public class Game : MonoBehaviour
     }
 
     public void SpawnHouses()
-    {
-        // Delete any existing houses
-        GameObject[] existingObjects = GameObject.FindGameObjectsWithTag("house");
-        foreach (GameObject existingObject in existingObjects)
+    {        
+        // Delete any existing houses in scene
+        var myHouses = FindObjectsOfType(typeof(House));
+        foreach (House house in myHouses)
         {
-            PhotonNetwork.Destroy(existingObject);
+            house.Destroy();
         }
+
         GameObject newHouse = PhotonNetwork.Instantiate("pfHouseRed", new Vector3(-3494.97314f, 136.899994f, -4602.46777f), Quaternion.Euler(new Vector3(270, 20.2657928f, 0)));
         newHouse = PhotonNetwork.Instantiate("pfHouseRed", new Vector3(-1462.17f, 166.5f, -3999.1f), Quaternion.Euler(new Vector3(270, 20.2657928f, 0)));
         newHouse = PhotonNetwork.Instantiate("pfHouseRed", new Vector3(-1972.1f, 120.5f, -2595.1f), Quaternion.Euler(new Vector3(270, 20.2657928f, 0)));
@@ -167,11 +174,20 @@ public class Game : MonoBehaviour
                 textTryOutMode.enabled = false;
             }
         }
-        if (GameState.Equals(GameState_.WaitingForSecondPlayerStats))
+        if (GameState.Equals(GameState_.CollectingGameStatistics))
         {
-            if (otherPlayer.GetComponent<Player>().PlayerStatsReceived)
+            if (otherPlayerStatsReceived)
             {
+                // Received stats, so we can end this game
                 SetGameState(GameState_.GameOver);
+            }
+        }
+        if (GameState.Equals(GameState_.Playing) || GameState.Equals(GameState_.WaitingForSecondPlayer))
+        {
+            if (timeLeftShowStarted > 0)
+            {
+                timeLeftShowStarted -= Time.deltaTime * .5f;
+                textStartingGame.alpha = timeLeftShowStarted;
             }
         }
 
@@ -207,6 +223,7 @@ public class Game : MonoBehaviour
         if( PhotonNetwork.CurrentRoom.PlayerCount==1 )
         {
             minimapAirplaneBlue.gameObject.SetActive(false);
+            PowerUpSpawner.SpawnPowerUps(); 
             SpawnHouses();
             CreatePlayerRed();
             cameraTransform.GetComponent<CinemachineFreeLook>().Follow = ownPlayer.transform;
@@ -220,21 +237,25 @@ public class Game : MonoBehaviour
             cameraTransform.GetComponent<CinemachineFreeLook>().Follow = ownPlayer.transform;
             cameraTransform.GetComponent<CinemachineFreeLook>().LookAt = ownPlayer.transform;
             // This is the second player, so the first should start the game (and remove existing items)
-            scriptOwnPlayer.PhotonView.RPC("StartGame", RpcTarget.Others, scriptOwnPlayer.PhotonView.ViewID);
+            scriptOwnPlayer.PhotonView.RPC("StartGameRedPlayer", RpcTarget.Others, scriptOwnPlayer.PhotonView.ViewID);
         }
 
     }
 
-    private void SetGameOverInfo()
+    public void SetGameOverInfo(float distanceOther, int healthOther, int numAirplanesOther)
     {
-        GameStats.HealthRed = playerRed.GetComponent<Player>().Health;
-        GameStats.HealthBlue = playerBlue.GetComponent<Player>().Health;
+        GameStats.HealthRed = scriptOwnPlayer.IsRedPlane ? scriptOwnPlayer.Health : healthOther;
+        GameStats.HealthBlue = scriptOwnPlayer.IsRedPlane ? healthOther : scriptOwnPlayer.Health;
+        GameStats.NumPlanesRed = scriptOwnPlayer.IsRedPlane ? scriptOwnPlayer.NumAirplanes : numAirplanesOther;
+        GameStats.NumPlanesBlue = scriptOwnPlayer.IsRedPlane ? numAirplanesOther : scriptOwnPlayer.NumAirplanes;
+        GameStats.DistanceRed = scriptOwnPlayer.IsRedPlane ? scriptOwnPlayer.DistanceTravelled : distanceOther;
+        GameStats.DistanceBlue = scriptOwnPlayer.IsRedPlane ? distanceOther : scriptOwnPlayer.DistanceTravelled;
 
         if (GameStats.HealthRed != GameStats.HealthBlue)
         {
             GameStats.GameOverReason = "Because the base is in better condition than the enemy";
         }
-        else if (playerBlue.GetComponent<Player>().NumAirplanes == 0 || playerRed.GetComponent<Player>().NumAirplanes == 0)
+        else if (GameStats.NumPlanesBlue == 0 || GameStats.NumPlanesRed == 0)
         {
             GameStats.GameOverReason = "Because the enemy has no airplanes left";
         }
@@ -243,21 +264,21 @@ public class Game : MonoBehaviour
             GameStats.GameOverReason = "Because he destroyed the enemy base";
         }
 
-        if (playerBlue.GetComponent<Player>().NumAirplanes == 0 || GameStats.HealthBlue == 0 || GameStats.HealthRed > GameStats.HealthBlue)
+        if (GameStats.NumPlanesBlue == 0 || GameStats.HealthBlue == 0 || GameStats.HealthRed > GameStats.HealthBlue)
         {
-            GameStats.PlayerWon = 0;
+            GameStats.PlayerWon = PlayerWon_.Red;
         }
-        else if (playerRed.GetComponent<Player>().NumAirplanes == 0 || GameStats.HealthRed == 0 || GameStats.HealthBlue > GameStats.HealthRed)
+        else if (GameStats.NumPlanesRed == 0 || GameStats.HealthRed == 0 || GameStats.HealthBlue > GameStats.HealthRed)
         {
-            GameStats.PlayerWon = 1;
+            GameStats.PlayerWon = PlayerWon_.Blue;
         }
         else
         {
-            GameStats.PlayerWon = 2;
+            GameStats.PlayerWon = PlayerWon_.Draw;
             GameStats.GameOverReason = "";
         }
-        GameStats.DistanceBlue = playerBlue.GetComponent<Player>().DistanceTravelled / 1000.0f;
-        GameStats.DistanceRed = playerRed.GetComponent<Player>().DistanceTravelled / 1000.0f;
+
+        otherPlayerStatsReceived = true;
     }
 
     private void FindOtherPlayer()
@@ -289,6 +310,8 @@ public class Game : MonoBehaviour
         {
             case GameState_.JoiningNetworkGame:
                 canvasConnecting.enabled = true;
+                textStartingGame.alpha = 0;
+                scriptPhotonServer.Connect();
                 break;
             case GameState_.WaitingForSecondPlayer:
                 scriptOwnPlayer.ResetGame();
@@ -296,19 +319,22 @@ public class Game : MonoBehaviour
                 panelStatus.SetActive(false);
                 break;
             case GameState_.Playing:
+                otherPlayerStatsReceived = false;
                 scriptOwnPlayer.ResetGame();
                 otherPlayer = null;
                 canvasConnecting.enabled = false;
                 textTryOutMode.enabled = false;
                 panelStatus.SetActive(true);
                 gameTimer.InitTimer();
+                timeLeftShowStarted = 1;
                 break;
-            case GameState_.WaitingForSecondPlayerStats:
-                scriptOwnPlayer.PhotonView.RPC("SetPlayerStats", RpcTarget.Others, scriptOwnPlayer.PhotonView.ViewID, scriptOwnPlayer.DistanceTravelled);
+            case GameState_.CollectingGameStatistics:
+                scriptOwnPlayer.PhotonView.RPC("SetPlayerStats", RpcTarget.Others, scriptOwnPlayer.PhotonView.ViewID, scriptOwnPlayer.DistanceTravelled, scriptOwnPlayer.Health, scriptOwnPlayer.NumAirplanes);
                 break;
             case GameState_.GameOver:
-                SetGameOverInfo();
                 SceneManager.LoadSceneAsync("GameOver");
+                PhotonNetwork.LeaveRoom();
+                //scriptPhotonServer.Disconnect();
                 break;
 
         }

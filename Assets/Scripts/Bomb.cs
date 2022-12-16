@@ -99,7 +99,7 @@ public class Bomb : MonoBehaviour
         {
             if (collider.gameObject.GetComponent<House>() != null)
             {
-                if (name.Equals("pfHouseRed"))
+                if (name.StartsWith("pfHouseRed"))
                 {
                     scriptGame.PlayerRed.GetComponent<Player>().DecreaseHealth();
                 }
@@ -107,7 +107,7 @@ public class Bomb : MonoBehaviour
                 {
                     scriptGame.PlayerBlue.GetComponent<Player>().DecreaseHealth();
                 }
-                Destroy(collider.gameObject);
+                collider.gameObject.GetComponent<House>().Destroy();
             }
         }
 
@@ -115,6 +115,9 @@ public class Bomb : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Detonate();
+        if (active) 
+        {
+            Detonate();
+        }
     }
 }

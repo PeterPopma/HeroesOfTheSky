@@ -16,12 +16,6 @@ public class GameMenu : MonoBehaviour
         GameObject.Find("CanvasSettings").GetComponent<Canvas>().enabled = false;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void OnSettingsClick()
     {
         GameObject.Find("CanvasMainMenu").GetComponent<Canvas>().enabled = false;
@@ -82,10 +76,7 @@ public class GameMenu : MonoBehaviour
 
     public void OnStartButtonClick()
     {
-        //        GlobalParams.GameMode = selectedGameMode;
-//        textLoading.enabled = true;
         SceneManager.LoadSceneAsync("Level1");
-
     }
 
     public void OnExitGameClick()

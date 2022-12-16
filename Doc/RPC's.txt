@@ -1,0 +1,19 @@
+Player
+
+SetPlayerStats - other
+StartGameBluePlayer - other
+StartGameRedPlayer - other
+EndGame - all
+ChangePlaneColor - all
+PlayerShotDown - all 
+SetHealth - all
+SetNumAirplanes - all
+
+House
+
+DestroyHouse - all
+
+
+Powerup
+
+DestroyPowerup - all

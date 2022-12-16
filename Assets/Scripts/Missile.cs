@@ -12,9 +12,11 @@ public class Missile : MonoBehaviour
     private bool isMoving;
     private float timeLastSmoke;
     private float pointsWorth = 1;
+    private bool ownerIsRed;
 
     public float PointsWorth { get => pointsWorth; set => pointsWorth = value; }
     public bool IsMoving { get => isMoving; set => isMoving = value; }
+    public bool OwnerIsRed { get => ownerIsRed; set => ownerIsRed = value; }
 
 
     // Update is called once per frame

@@ -10,9 +10,11 @@ public class House : MonoBehaviour
     private Game scriptGame;
     private float timeDestroyed;
     private bool isDestroyed = false;
+    private PhotonView photonView;
 
     private void Awake()
     {
+        photonView = GetComponent<PhotonView>();
         scriptGame = GameObject.Find("/Scripts/Game").GetComponent<Game>();
     }
     
@@ -29,24 +31,13 @@ public class House : MonoBehaviour
         {
             if (Time.time - timeDestroyed>5)
             {
-                Destroy(gameObject);
+                Destroy();
             }
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    public void Explode()
     {
-        if (isDestroyed)
-        {
-            return;
-        }
-
-        if (other.name.Equals("pfBomb"))
-        {
-            // Bomb has its own collision detection
-            return;
-        }
-
         Transform newFX = Instantiate(vfxExplosion, transform.position, Quaternion.identity);
         newFX.parent = GameObject.Find("/vFX").transform;
         isDestroyed = true;
@@ -63,6 +54,37 @@ public class House : MonoBehaviour
         else
         {
             scriptGame.PlayerBlue.GetComponent<Player>().DecreaseHealth();
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (isDestroyed)
+        {
+            return;
+        }
+
+        if (other.name.Equals("pfBomb"))
+        {
+            // Bomb has its own collision detection
+            return;
+        }
+
+        Explode();
+    }
+
+    public void Destroy()
+    {
+        photonView.RPC("DestroyHouse", RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void DestroyHouse()
+    {
+        // The read player created the powerups, so should also destroy them.
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         }
     }
 }

@@ -12,7 +12,6 @@ public class PhotonServer : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        Connect();
     }
 
     public override void OnConnectedToMaster()
@@ -37,8 +36,6 @@ public class PhotonServer : MonoBehaviourPunCallbacks
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        Debug.Log("PUN Basics Tutorial/Launcher:OnJoinRandomFailed() was called by PUN. No random room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
-
         // #Critical: we failed to join a random room, maybe none exists or they are all full. No worries, we create a new room.
         RoomOptions roomOptions = new RoomOptions();
         roomOptions.MaxPlayers = 2;
@@ -71,9 +68,10 @@ public class PhotonServer : MonoBehaviourPunCallbacks
         scriptGame.JoinNetworkGame();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Disconnect()
     {
-        
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LeaveLobby();
+        PhotonNetwork.Disconnect();
     }
 }

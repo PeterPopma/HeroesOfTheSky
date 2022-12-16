@@ -54,6 +54,11 @@ MonoBehaviour:
   - SetPlayerStats
   - SetHealth
   - StartGameSecondPlayer
+  - StartGameBluePlayer
+  - StartGameRedPlayer
+  - DestroyPowerup
+  - DestroyHouse
+  - ShowGameOverScreen
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

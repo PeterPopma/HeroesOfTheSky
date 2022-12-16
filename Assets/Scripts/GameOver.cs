@@ -21,7 +21,7 @@ public class GameOver : MonoBehaviour
 
     private void OnContinue(InputValue value)
     {
-        SceneManager.LoadSceneAsync("GameMenu");
+        SceneManager.LoadSceneAsync("GameMenu"); 
     }
 
     private void Awake()
@@ -42,7 +42,7 @@ public class GameOver : MonoBehaviour
     void Start()
     {
         textReason.text = GameStats.GameOverReason;
-        if (GameStats.PlayerWon==0)
+        if (GameStats.PlayerWon.Equals(PlayerWon_.Red))
         {
             textWonRed.enabled = true;
             textWonBlue.enabled = false;
@@ -50,7 +50,7 @@ public class GameOver : MonoBehaviour
             imageFlagRed.enabled = true;
             imageFlagBlue.enabled = false;
         }
-        else if(GameStats.PlayerWon == 1)
+        else if (GameStats.PlayerWon.Equals(PlayerWon_.Blue))
         {
             textWonRed.enabled = false;
             textWonBlue.enabled = true;
@@ -68,8 +68,8 @@ public class GameOver : MonoBehaviour
         }
         textHealthRed.text = GameStats.HealthRed + " %";
         textHealthBlue.text = GameStats.HealthBlue + " %";
-        textDistanceRed.text = GameStats.DistanceRed.ToString("0.0");
-        textDistanceBlue.text = GameStats.DistanceBlue.ToString("0.0");
+        textDistanceRed.text = (GameStats.DistanceRed / 1000.0).ToString("0.0");
+        textDistanceBlue.text = (GameStats.DistanceBlue / 1000.0).ToString("0.0");
     }
 
     // Update is called once per frame

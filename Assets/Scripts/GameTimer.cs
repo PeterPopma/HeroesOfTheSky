@@ -7,7 +7,7 @@ public class GameTimer : MonoBehaviour
 {
     [SerializeField] private AudioSource soundTimerAlarm;
 
-    private int GAME_PLAYTIME = 30;
+    private int GAME_PLAYTIME = 300;
     private int timeLeft;
     private TextMeshProUGUI textTimeLeft;
     float startTime;
@@ -34,11 +34,15 @@ public class GameTimer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!scriptGame.GameState.Equals(GameState_.Playing))
+        {
+            return;
+        }
         timeLeft = (int)(GAME_PLAYTIME - (Time.time - startTime));
         if (timeLeft <= 0 && !scriptGame.GameState.Equals(GameState_.WaitingForSecondPlayer))
         {
             timeLeft = 0;
-            scriptGame.SetGameState(GameState_.WaitingForSecondPlayerStats);
+            scriptGame.SetGameState(GameState_.CollectingGameStatistics);
         }
         textTimeLeft.text = "Time left: " + timeLeft.ToString();
         if (timeLeft<10 && !alarmPlaying)

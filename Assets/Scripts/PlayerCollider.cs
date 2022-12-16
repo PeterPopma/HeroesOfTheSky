@@ -23,20 +23,24 @@ namespace AirplaneGame
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.GetComponent<IconMissile>() != null)
+            if (other.name.StartsWith("pfPowerupMissile"))
             {
                 scriptPlayer.AddMissiles();
-                other.GetComponent<IconMissile>().HitTarget();
+                other.GetComponent<Powerup>().HitTarget();
             }
-            else if(other.GetComponent<IconBomb>() != null)
+            else if(other.name.StartsWith("pfPowerupBomb"))
             {
                 scriptPlayer.AddBombs();
-                other.GetComponent<IconBomb>().HitTarget();
+                other.GetComponent<Powerup>().HitTarget();
             }
-            else if (other.GetComponent<IconFuel>() != null)
+            else if (other.name.StartsWith("pfPowerupFuel"))
             {
                 scriptPlayer.AddFuel();
-                other.GetComponent<IconFuel>().HitTarget();
+                other.GetComponent<Powerup>().HitTarget();
+            }
+            else if (other.GetComponent<Missile>() != null && other.GetComponent<Missile>().OwnerIsRed == scriptPlayer.IsRedPlane)
+            { 
+                // Hit own plane with missile
             }
             else if(!name.Equals("Icon"))
             {
